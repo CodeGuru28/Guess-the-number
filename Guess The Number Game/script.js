@@ -1,7 +1,9 @@
 
 const prompt = require("prompt-sync")();
 
-
+/**
+ * Menu Options for the game
+ */
 const menuOptions = [
   ["Start(1)", "1"],
   ["About Dev(2)", "2"],
@@ -16,8 +18,14 @@ let user = {
   score: 0,
 };
 
+/**
+ * Life Lines of the game
+ */
 let lifeLines = ["isPrime", "isEven", "isMultipleOfTen"];
 
+/**
+ * Settings Options of the game
+ */
 let settings = {
   difficulty: "",
   hints: undefined,
@@ -27,6 +35,12 @@ let settings = {
   chances: undefined,
 };
 
+/**
+ * Takes and Returns Prompts
+ * @param {string} string: The string that you want to show on the prompt 
+ * @param {string} datatype: The datatype that you want to get(string[by default], int)  
+ * @returns the input given or err if the datatype is not what it is asked to be
+ */
 function input(string, datatype = "str") {
   let inp = prompt(string);
   if (datatype == "int") {
@@ -38,11 +52,18 @@ function input(string, datatype = "str") {
   return inp;
 }
 
+/**
+ * Basic Greet Function
+ */
 function greet() {
   console.log("Hello Player");
   console.log("Welcome to the game, Guess The Number!");
 }
 
+/**
+ * Displays the menu options -> Takes the input from the user -> Validates the input
+ * @returns the menu chosen by the user input || err if the menu is not in the menu options
+ */
 function choose_menu() {
   displayMenu();
   let choice = input("Enter your choice: ");
@@ -50,6 +71,11 @@ function choose_menu() {
   return menu;
 }
 
+/**
+ * Checks/Validates the menu option entered by the user.
+ * @param {string} Choice: the menu user chose
+ * @returns the user's menu || if the menu is not in the menu options return false
+ */
 function validateMenuChoice(choice) {
   for (let i = 0; i < menuOptions.length; i++) {
     if (menuOptions[i].includes(choice)) {
@@ -59,12 +85,22 @@ function validateMenuChoice(choice) {
   return false;
 }
 
+/**
+ * Basic for loop to display menu options
+ */
 function displayMenu() {
   for (let i = 0; i < menuOptions.length; i++) {
     console.log(menuOptions[i][0]);
   }
 }
 
+/**
+ * 
+ * @param {Number} The minimum range value
+ * @param {Number} The maximum range value 
+ * @param {Number} chances The maximum chances a player gets 
+ * @param {Number} lifeLines The number of life lines a user gets 
+ */
 function displayRules(min, max, chances, lifeLines) {
   console.log("The Rules of the Game are as follows: ");
   console.log(`1. You have to guess a number between ${min} and ${max}`);
@@ -80,6 +116,10 @@ function displayRules(min, max, chances, lifeLines) {
   );
 }
 
+/**
+ * Lets the user to decide the difficulty level for the game.
+ * @returns returns the input given by the user for difficulty level || err if the input is invalid
+ */
 function getDifficulty() {
   console.log("Choose your difficulty level: ");
   console.log(" Easy(1)");
@@ -106,6 +146,10 @@ function getDifficulty() {
   } else return "err";
 }
 
+/**
+ * Lets the user to select their favorite custom settings
+ * @returns an array which contains the desired settings for the game.
+ */
 function getCustomSettings() {
   console.log(separator);
   let min = input("Enter the minimum value: ");
@@ -113,7 +157,7 @@ function getCustomSettings() {
   let max = input("Enter the maximum value: ");
   console.log(separator);
   
-  if (min > max || min.isNaN() || max.isNaN()) {
+  if (min > max || min.isNaN() || max.isNaN()) { //!Error: isNan is not a function
     console.log("Please put correct minimum and maximum values");
     return "err";
   }
@@ -146,6 +190,11 @@ function getCustomSettings() {
   return [min, max, chances, hints, lifeLines];
 }
 
+/**
+ * Takes the difficulty input of the User and assigns the settings object's  key's value
+ * @param {string} difficulty: The input of the difficulty given by the user 
+ * @returns err if the difficulty is invalid
+ */
 function loadSettings(difficulty) {
   switch (difficulty) {
     case "easy":
@@ -209,6 +258,11 @@ function loadSettings(difficulty) {
   }
 }
 
+/**
+ * 
+ * @param {string} difficult : The difficulty desired by the user
+ * @returns ok if everything is good || err if invalid input
+ */
 function setSettings(difficult) {
   if (difficult == "default") {
     let loaded = loadSettings("easy");
@@ -221,6 +275,12 @@ function setSettings(difficult) {
   else return "ok";
 }
 
+/**
+ * 
+ * @param {Number} min: The minimum number range
+ * @param {Number} max: The maximum number range
+ * @returns a random number between min and max
+ */
 function getRandomInt(min, max) {
   const minCeiled = Math.ceil(min);
   const maxFloored = Math.floor(max);
@@ -228,8 +288,8 @@ function getRandomInt(min, max) {
 }
 
 greet();
-let gameWindow = true;
-let gameMode = "menu";
+let gameWindow = true;// If want to exit the game?
+let gameMode = "menu";//Different loops to make the program infinite!
 
 while (gameWindow) {
   while (gameMode === "menu") {
@@ -243,7 +303,6 @@ while (gameWindow) {
         break;
 
       case "1":
-        console.log("here1");
         gameMode = "game";
         break;
       case "2":
