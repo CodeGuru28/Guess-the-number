@@ -1,7 +1,7 @@
-// TODO: Fix Edge Cases of Not A Number in custom settings input!
-// TODO: Fix other errors;
 
 const prompt = require("prompt-sync")();
+
+
 const menuOptions = [
   ["Start(1)", "1"],
   ["About Dev(2)", "2"],
@@ -112,24 +112,29 @@ function getCustomSettings() {
   console.log(separator);
   let max = input("Enter the maximum value: ");
   console.log(separator);
-  let chances = input("Enter the number of chances: ");
-  console.log(separator);
-  if (min > max) {
+  
+  if (min > max || min.isNaN() || max.isNaN()) {
     console.log("Please put correct minimum and maximum values");
     return "err";
   }
+
+  let chances = input("Enter the number of chances: ");
+  console.log(separator);
   if (chances > max - min){
     console.log("Please put correct number of chances! It must be less than the range of numbers");
     return "err";
   }
+
   console.log(separator);
   let hints = input("Do you want hints? (y/n): ");
+
   if (hints == "y") hints = true;
   else if(hints == "n") hints = false;
   else{
     console.log("Please enter either y or n");
     return "err";
   }
+
   let lifeLines = input("Do you want to use lifeLines? (y/n): ");
   if (lifeLines == "y") lifeLines = true;
   else if(lifeLines == "n") lifeLines = false;
@@ -137,6 +142,7 @@ function getCustomSettings() {
     console.log("Please enter either y or n");
     return "err";
   }
+
   return [min, max, chances, hints, lifeLines];
 }
 
