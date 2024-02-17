@@ -13,11 +13,6 @@ const menuOptions = [
 
 let separator = "----------------------";
 
-let user = {
-  name: "player",
-  score: 0,
-};
-
 /**
  * Life Lines of the game
  */
@@ -29,10 +24,11 @@ let lifeLines = ["isPrime", "isEven", "isMultipleOfTen"];
 let settings = {
   difficulty: "",
   hints: undefined,
-  lifeLines: undefined,
+  lifeLine: undefined,
   min: undefined,
   max: undefined,
   chances: undefined,
+  usableLifeLines: undefined
 };
 
 /**
@@ -101,19 +97,21 @@ function displayMenu() {
  * @param {Number} chances The maximum chances a player gets 
  * @param {Number} lifeLines The number of life lines a user gets 
  */
-function displayRules(min, max, chances, lifeLines) {
+function displayRules(min, max, chances, lifeLine, usableLifeLine) {
   console.log("The Rules of the Game are as follows: ");
-  console.log(`1. You have to guess a number between ${min} and ${max}`);
-  console.log(`2. You have a total of ${chances}`);
-  console.log(`3. You will be provided with ${lifeLines.length} lifelines`);
-  console.log(`4. You can use the following lifelines:`);
-  for (let i = 0; i < lifeLines.length; i++) {
-    console.log(`${lifeLines[i]}`);
+  console.log(`-->You have to guess a number between ${min} and ${max}`);
+  console.log(`-->You have a total of ${chances} chances`);
+  console.log(separator)
+  if(lifeLine){
+    console.log(`-->You will be provided with ${usableLifeLine.length} lifelines`);
+    console.log(`-->You can use the following lifelines:`);
+    for (let i = 0; i < usableLifeLine.length; i++) {
+      console.log(`${usableLifeLine[i]}`);
+    }
+    console.log(separator)
+    console.log(`-->You can use a lifeline only once`);
+    console.log(`-->You can use a lifeLine by entering "LL: <name>" as your guess`,);
   }
-  console.log(`4. You can use a lifeline only once`);
-  console.log(
-    `5. You can use a lifeLine by entering "LL: <name>" as your guess`,
-  );
 }
 
 /**
@@ -152,19 +150,20 @@ function getDifficulty() {
  */
 function getCustomSettings() {
   console.log(separator);
-  let min = input("Enter the minimum value: ");
+  let min = input("Enter the minimum value: ", "int");
   console.log(separator);
-  let max = input("Enter the maximum value: ");
+  let max = input("Enter the maximum value: ", "int");
   console.log(separator);
   
-  if (min > max || min.isNaN() || max.isNaN()) { //!Error: isNan is not a function
+  if(min === "err" || max === "err" || min > max ){
     console.log("Please put correct minimum and maximum values");
-    return "err";
+    return "err"
   }
 
-  let chances = input("Enter the number of chances: ");
+  let chances = input("Enter the number of chances: ", "int");
   console.log(separator);
-  if (chances > max - min){
+
+  if (chances > max - min || chances === "err"){
     console.log("Please put correct number of chances! It must be less than the range of numbers");
     return "err";
   }
@@ -200,7 +199,8 @@ function loadSettings(difficulty) {
     case "easy":
       settings.difficulty = "easy";
       settings.hints = true;
-      settings.lifeLines = ["isPrime", "isEven", "isMultipleOfTen"];
+      settings.lifeLine = true;
+      settings.usableLifeLines = ["isPrime", "isEven", "isMultipleOfTen"];
       settings.min = 1;
       settings.max = 100;
       settings.chances = 10;
@@ -209,7 +209,8 @@ function loadSettings(difficulty) {
     case "medium":
       settings.difficulty = "medium";
       settings.hints = true;
-      settings.lifeLines = ["isPrime", "isEven", "isMultipleOfTen"];
+      settings.lifeLine = true;
+      settings.usableLifeLines = ["isPrime", "isEven", "isMultipleOfTen"];
       settings.min = 1;
       settings.max = 400;
       settings.chances = 10;
@@ -218,7 +219,8 @@ function loadSettings(difficulty) {
     case "hard":
       settings.difficulty = "hard";
       settings.hints = false;
-      settings.lifeLines = ["isPrime"];
+      settings.lifeLine = true;
+      settings.usableLifeLines = ["isPrime"];
       settings.min = 1;
       settings.max = 80;
       settings.chances = 8;
@@ -227,7 +229,8 @@ function loadSettings(difficulty) {
     case "extreme":
       settings.difficulty = "extreme";
       settings.hints = false;
-      settings.lifeLines = ["isEven"];
+      settings.lifeLine = true;
+      settings.usableLifeLines = ["isEven"];
       settings.min = 1;
       settings.max = 40;
       settings.chances = 4;
@@ -236,7 +239,8 @@ function loadSettings(difficulty) {
     case "troll":
       settings.difficulty = "troll";
       settings.hints = true;
-      settings.lifeLines = ["isPrime", "isEven", "isMultipleOfTen"];
+      settings.lifeLine = true;
+      settings.usableLifeLines = ["isPrime", "isEven", "isMultipleOfTen"];
       settings.min = 1;
       settings.max = 500;
       settings.chances = 3;
@@ -250,7 +254,8 @@ function loadSettings(difficulty) {
       settings.max = customSettings[1];
       settings.chances = customSettings[2];
       settings.hints = customSettings[3];
-      settings.lifeLines = customSettings[4];
+      settings.lifeLine = customSettings[4];
+      settings.usableLifeLines = ["isPrime", "isEven", "isMultipleOfTen"];
       break;
 
     default:
@@ -330,7 +335,7 @@ while (gameWindow) {
       console.log("please choose the correct option")
       continue;
     }
-    displayRules(settings.min, settings.max, settings.chances, settings.lifeLines)
+    displayRules(settings.min, settings.max, settings.chances, settings.lifeLine, settings.usableLifeLines)
     break;
   }
   while(gameMode === "settings"){
@@ -340,8 +345,9 @@ while (gameWindow) {
       console.log("please choose the correct option")
       continue;
     }
-    displayRules(settings.min, settings.max, settings.chances, settings.lifeLines)
+    displayRules(settings.min, settings.max, settings.chances, settings.lifeLine, settings.usableLifeLines);
+    gameMode = "menu";
+    console.log(separator)
     break;
   }
-  break;
 }
