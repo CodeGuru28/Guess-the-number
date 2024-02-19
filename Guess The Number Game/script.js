@@ -11,6 +11,8 @@ const menuOptions = [
   ["Exit(q)", "q"],
 ];
 
+let guesses = [];
+
 let separator = "----------------------";
 
 /**
@@ -22,7 +24,7 @@ let lifeLines = ["isPrime", "isEven", "isMultipleOfTen"];
  * Settings Options of the game
  */
 let settings = {
-  difficulty: "",
+  difficulty: undefined,
   hints: undefined,
   lifeLine: undefined,
   min: undefined,
@@ -37,8 +39,14 @@ let settings = {
  * @param {string} datatype: The datatype that you want to get(string[by default], int)  
  * @returns the input given or err if the datatype is not what it is asked to be
  */
-function input(string, datatype = "str") {
+function input(string, datatype = "str", checkLifeLine = false) {
   let inp = prompt(string);
+  if(inp === null) return "err";
+  if(checkLifeLine){
+    if(inp.includes("LL:")){
+      return inp.slice(3).trim();
+    }
+  }
   if (datatype == "int") {
     if (isNaN(inp)) {
       return "err";
@@ -292,6 +300,61 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
 }
 
+function hint(guess, number) {
+  if(((number>guess) && (number-guess)<10) || ((guess>number) &&  (guess-number)<10)) 
+  return "You are very close to the number!";
+
+  if(guess<number) return `The number is too low!`;
+
+  return `The number is too high!`;
+}
+
+function checkWin(guess, number){
+  if(guess === number){
+    console.log("WIN!")
+    return true;
+  }
+  return false;
+}
+
+function stats(guesses, number, chances, lifeLines){
+  console.log(`You used ${chances} chance(s)!`)
+
+  if(lifeLines.length != 0){
+    console.log(`You used ${lifeLines.length} life lines`)
+    console.log(`Life Lines used are: `);
+    for(let i = 0; i < lifeLines.length; i++){
+      console.log(`${lifeLines[i]}`);
+    }
+  }
+
+  console.log(`The original number was ${number}`)
+  console.log(`Your guesses were: `);
+  console.log(`${guesses.join(", ")}`);
+}
+
+function isPrime(number){
+  for(let i = 2; i < number; i++){
+    if(number%i === 0) return true;
+  }
+}
+
+function isMultipleOfTen(number){
+  if(number%10 === 0) return true;
+}
+
+function isEven(number){
+  if(number%2 === 0) return true;
+}
+
+function checkLifeLine(lifeLine){
+  console.log(settings.usableLifeLines.includes(lifeLine))
+  if(settings.usableLifeLines.includes(lifeLine)){
+    return true;
+  }
+  return false;
+}
+
 greet();
 let gameWindow = true;// If want to exit the game?
 let gameMode = "menu";//Different loops to make the program infinite!
@@ -328,15 +391,109 @@ while (gameWindow) {
         console.log("Some Error Occurred! Try Again");
         continue;
     }
+    break;
   }
   while (gameMode === "game") {
-    let setting = setSettings("default");
-    if(setting === "err"){
-      console.log("please choose the correct option")
-      continue;
+    if(settings.difficulty === undefined || settings.min === undefined || settings.max === undefined){
+      let setting = setSettings("default");
+      if(setting === "err"){
+        console.log("please choose the correct option")
+        continue;
+      }
     }
     displayRules(settings.min, settings.max, settings.chances, settings.lifeLine, settings.usableLifeLines)
-    break;
+    let ask = input("Please press any key to continue OR 'q' to quit: ");
+    if(ask === "q"){
+      gameMode = "exit";
+      gameWindow = false;
+      break;
+    }
+    
+    let game = true;
+    const computerChoice = getRandomInt(settings.min, settings.max);
+    let userGuesses = []; 
+    console.log("I have chosen a number! Try to Guess it!");
+    console.log(`Hint: Its between ${settings.min} - ${settings.max}`);
+    let chances = 0;
+    let usedLifeLines = [];
+    
+    while(game){
+      if(chances === settings.chances){
+        console.log("You lost!")
+        stats(guesses, computerChoice, chances, usedLifeLines);
+        let playAgain = input("Enter 'y' to play again or anything else to exit: ");
+        if(playAgain === "y"){
+          gameMode = "game"
+          game = false;
+          break;
+        }
+        else{
+          gameMode = "exit";
+          gameWindow = false;
+          break;
+        }
+      }
+      console.log(computerChoice);
+      console.log(userGuesses);
+      console.log(separator);
+
+
+      let guess = input("Your Guess: ", "int", true);
+      if(checkLifeLine(guess)){
+        if(usedLifeLines.includes(guess)){
+          console.log("You have already used this life line!");
+          continue;
+        }
+        switch (guess){
+          case "isPrime":
+            console.log(isPrime(computerChoice)? `It is a prime number!` : `It is not a prime number`);
+            break;
+
+          case "isMultipleOfTen":
+            console.log(isMultipleOfTen(computerChoice)? `It is a multiple of ten!` : `It is not a multiple of ten`);
+            break;
+
+          case "isEven":
+            console.log(isEven(computerChoice)? `It is a even number!` : `It is not a even number`);
+            break;
+
+            default:
+              console.log("try again");
+              continue;
+        }
+        usedLifeLines.push(guess);
+      }
+      console.log(separator);
+      if(guess === "err" || isNaN(guess)){
+        console.log("Please chose a number! Try again")
+        continue;
+      }
+      if(guess>settings.max || guess<settings.min){
+        console.log(`Please choose a number within the range of ${settings.min} - ${settings.max}`);
+        continue;
+      }
+      userGuesses.push(guess);
+      let correctGuess = checkWin(guess, computerChoice);
+      if(correctGuess){
+        stats(guesses, computerChoice, chances, lifeLines);
+        guesses.push(userGuesses);
+        let playAgain = input("Enter 'y' to play again or anything else to exit: ");
+        if(playAgain === "y"){
+          gameMode = "game";
+          game = false;
+        }
+        else{
+          gameMode = "exit";
+          gameWindow = false;
+          break;
+        }
+      }
+      if(settings.hints){
+        console.log(hint(guess, computerChoice));
+      }
+      chances++;
+      console.log(`Chances left: ${(settings.chances-chances).toString()}`);
+    }
   }
   while(gameMode === "settings"){
     console.log(separator)
@@ -347,6 +504,8 @@ while (gameWindow) {
     }
     displayRules(settings.min, settings.max, settings.chances, settings.lifeLine, settings.usableLifeLines);
     gameMode = "menu";
+    console.log(separator)
+    input("Press enter to continue")
     console.log(separator)
     break;
   }
